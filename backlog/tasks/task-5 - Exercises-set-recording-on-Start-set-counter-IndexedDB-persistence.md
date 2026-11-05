@@ -1,11 +1,11 @@
 ---
 id: TASK-5
 title: 'Exercises, set recording on Start, set counter, IndexedDB persistence'
-status: In Progress
+status: Done
 assignee:
   - '@claude'
 created_date: '2026-11-05 22:06'
-updated_date: '2026-11-05 22:22'
+updated_date: '2026-11-05 22:26'
 labels:
   - data
   - ui
@@ -64,3 +64,9 @@ Verified: npm test (117 tests), npm run build, npm run format:check on Node 24.1
 
 Review fixes: selection is now stored explicitly (Repository get/setSelectedExerciseId; idb-keyval '<prefix>-meta' store, key selectedExerciseId; null = none chosen, unset falls back to latest lastUsed, stale id falls back too). Tapping the selected chip deselects. '+ New' with an existing name (trimmed, case-insensitive) selects that exercise instead of duplicating. Chip order is fixed between load and the next create; select still writes lastUsed. Added tests: deselect + explicit null restore, stored selection over latest lastUsed, duplicate name, contract test for selection (both repos, idb reopen), hook-level failed-load test (src/ui/useWorkout.test.ts). idbRepository comment on the split stores. 123 tests, build and format:check pass on Node 24.
 <!-- SECTION:NOTES:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Exercises, set recording on Start, set badge, idb-keyval persistence merged to main (03ae0af + review fixes 7656af3). Reviewed and re-reviewed clean, hand-tested at 360px. 123 tests, build and format clean. Open nit: an exercise selected by name while outside the 6 recent chips is not shown as a chip (carry to task-6).
+<!-- SECTION:FINAL_SUMMARY:END -->
