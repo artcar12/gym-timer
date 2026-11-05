@@ -55,6 +55,15 @@ describe.each(implementations)('%s', (_name, make) => {
     expect(ids(await repo.listSets())).toEqual(['s1', 's3'])
   })
 
+  it('stores the selected exercise id, distinguishing null from unset', async () => {
+    const repo = make()
+    expect(await repo.getSelectedExerciseId()).toBeUndefined()
+    await repo.setSelectedExerciseId('a')
+    expect(await repo.getSelectedExerciseId()).toBe('a')
+    await repo.setSelectedExerciseId(null)
+    expect(await repo.getSelectedExerciseId()).toBeNull()
+  })
+
   it('queries sets by local day', async () => {
     const repo = make()
     await repo.addSet(set('late', 'a', day(5, 23)))
@@ -75,10 +84,12 @@ describe('idbRepository persistence', () => {
     const first = idbRepository(name)
     await first.putExercise({ id: 'a', name: 'Row', lastUsed: 3 })
     await first.addSet(set('s1', 'a', day(5)))
+    await first.setSelectedExerciseId(null)
     const second = idbRepository(name)
     expect(await second.listExercises()).toEqual([
       { id: 'a', name: 'Row', lastUsed: 3 },
     ])
     expect(await second.listSets()).toEqual([set('s1', 'a', day(5))])
+    expect(await second.getSelectedExerciseId()).toBeNull()
   })
 })

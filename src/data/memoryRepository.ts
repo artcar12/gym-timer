@@ -4,8 +4,13 @@ import type { Exercise, SetRecord } from './types.ts'
 
 /** In-memory repository for tests and as a reference implementation. */
 export function memoryRepository(
-  seed: { exercises?: Exercise[]; sets?: SetRecord[] } = {},
+  seed: {
+    exercises?: Exercise[]
+    sets?: SetRecord[]
+    selectedExerciseId?: string | null
+  } = {},
 ): Repository {
+  let selected = seed.selectedExerciseId
   const exercises = new Map(seed.exercises?.map((e) => [e.id, e]))
   const sets = new Map(seed.sets?.map((s) => [s.id, s]))
   return {
@@ -20,6 +25,10 @@ export function memoryRepository(
     },
     deleteSet: async (id) => {
       sets.delete(id)
+    },
+    getSelectedExerciseId: async () => selected,
+    setSelectedExerciseId: async (id) => {
+      selected = id
     },
   }
 }

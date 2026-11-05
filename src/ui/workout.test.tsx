@@ -100,7 +100,7 @@ describe('exercise chips', () => {
     expect(await repo.listExercises()).toEqual([])
   })
 
-  it('shows at most 6, most recent first; a tap selects and bumps lastUsed', async () => {
+  it('shows at most 6, most recent first; a tap selects and bumps lastUsed without reordering', async () => {
     const exercises = Array.from({ length: 8 }, (_, i) =>
       ex(`e${i}`, `Ex ${i}`, YESTERDAY + i),
     )
@@ -116,9 +116,74 @@ describe('exercise chips', () => {
     await flush()
     expect(button('Ex 3').getAttribute('aria-pressed')).toBe('true')
     expect(button('Ex 7').getAttribute('aria-pressed')).toBe('false')
-    expect(document.querySelector('.chip--exercise')?.textContent).toBe('Ex 3')
+    // Order is fixed for the session, so chips do not shift under the finger.
+    const chipNames = () =>
+      [...document.querySelectorAll('.chip--exercise')].map(
+        (b) => b.textContent,
+      )
+    expect(chipNames()).toEqual(names)
     const stored = await repo.listExercises()
     expect(stored.find((e) => e.id === 'e3')?.lastUsed).toBe(TODAY + 5_000)
+
+    // The next load (or a create) uses the new lastUsed order.
+    cleanup()
+    await renderApp(repo)
+    expect(chipNames()[0]).toBe('Ex 3')
+    expect(button('Ex 3').getAttribute('aria-pressed')).toBe('true')
+  })
+
+  it('tapping the selected chip deselects; none stays selected after reload', async () => {
+    const repo = memoryRepository({
+      exercises: [ex('a', 'Bench', YESTERDAY), ex('b', 'Squat', YESTERDAY + 1)],
+    })
+    await renderApp(repo)
+    expect(button('Squat').getAttribute('aria-pressed')).toBe('true')
+    fireEvent.click(button('Squat'))
+    expect(button('Squat').getAttribute('aria-pressed')).toBe('false')
+    expect(button('Bench').getAttribute('aria-pressed')).toBe('false')
+    expect(document.querySelector('.badge')).toBeNull()
+    fireEvent.click(button('Start'))
+    await flush()
+    expect(await repo.listSets()).toEqual([])
+    expect(await repo.getSelectedExerciseId()).toBeNull()
+
+    cleanup()
+    await renderApp(repo)
+    // Explicit null is restored, not replaced by the latest lastUsed.
+    expect(
+      document.querySelector('.chip--exercise[aria-pressed="true"]'),
+    ).toBeNull()
+    expect(document.querySelector('.badge')).toBeNull()
+
+    fireEvent.click(button('Bench'))
+    expect(count()).toBe('0')
+    await flush()
+    expect(await repo.getSelectedExerciseId()).toBe('a')
+  })
+
+  it('restores a stored selection over the latest lastUsed', async () => {
+    await renderApp(
+      memoryRepository({
+        exercises: [
+          ex('a', 'Bench', YESTERDAY),
+          ex('b', 'Squat', YESTERDAY + 1),
+        ],
+        selectedExerciseId: 'a',
+      }),
+    )
+    expect(button('Bench').getAttribute('aria-pressed')).toBe('true')
+  })
+
+  it('+ New with an existing name selects it instead of duplicating', async () => {
+    const repo = memoryRepository({
+      exercises: [ex('a', 'Bench press', YESTERDAY), ex('b', 'Squat', TODAY)],
+    })
+    await renderApp(repo)
+    await addExercise('  bench PRESS ')
+    expect(button('Bench press').getAttribute('aria-pressed')).toBe('true')
+    expect(document.querySelectorAll('.chip--exercise')).toHaveLength(2)
+    expect(await repo.listExercises()).toHaveLength(2)
+    expect(await repo.getSelectedExerciseId()).toBe('a')
   })
 })
 
@@ -259,6 +324,8 @@ describe('loading and persistence', () => {
       deleteSet: () => {
         throw new Error('sync throw')
       },
+      getSelectedExerciseId: fail,
+      setSelectedExerciseId: fail,
     }
     await renderApp(repo)
     expect(error).toHaveBeenCalledTimes(1)
@@ -272,8 +339,8 @@ describe('loading and persistence', () => {
     await flush()
     expect(button('Pause')).toBeTruthy()
     expect(screen.getByRole('timer').textContent).toBe('01:00')
-    // load, putExercise, addSet, deleteSet
-    expect(error).toHaveBeenCalledTimes(4)
+    // load, putExercise, setSelectedExerciseId, addSet, deleteSet
+    expect(error).toHaveBeenCalledTimes(5)
     expect(queryButton('Start')).toBeNull()
   })
 })
