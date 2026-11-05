@@ -1,22 +1,17 @@
-import type { Repository } from '../data/index.ts'
 import { Controls } from './Controls.tsx'
 import { Dial } from './Dial.tsx'
 import { ExerciseChips } from './ExerciseChips.tsx'
 import { PresetChips } from './PresetChips.tsx'
 import { SetBadge } from './SetBadge.tsx'
-import { useTimer, type UseTimerOptions } from './useTimer.ts'
-import { useWorkout } from './useWorkout.ts'
+import type { TimerView } from './useTimer.ts'
+import type { WorkoutView } from './useWorkout.ts'
 
-export interface TimerScreenProps extends Omit<UseTimerOptions, 'onStarted'> {
-  /** Exercise and set storage. Must be a stable reference. */
-  repo: Repository
-}
-
-export function TimerScreen(props: TimerScreenProps) {
-  const { repo, ...timerOptions } = props
-  const workout = useWorkout({ repo, now: timerOptions.now })
-  // A start = a set: recorded from the Start / preset tap handler itself.
-  const timer = useTimer({ ...timerOptions, onStarted: workout.recordSet })
+/**
+ * The main screen: a view of timer and workout state owned by the shell, so
+ * nothing here resets when the user switches tabs.
+ */
+export function TimerScreen(props: { timer: TimerView; workout: WorkoutView }) {
+  const { timer, workout } = props
   const selected = workout.selected
   return (
     <main class="screen">

@@ -1,6 +1,6 @@
 // @vitest-environment node
-import { expect, it } from 'vitest'
-import { formatMs, presetLabel } from './format.ts'
+import { describe, expect, it } from 'vitest'
+import { dayLabel, formatMs, presetLabel, setsLabel } from './format.ts'
 import { parseCustom } from './PresetChips.tsx'
 
 it('formats mm:ss with ceiling to whole seconds', () => {
@@ -32,4 +32,28 @@ it('parses custom m:ss or seconds', () => {
   expect(parseCustom('1:75')).toBeNull()
   expect(parseCustom('abc')).toBeNull()
   expect(parseCustom('')).toBeNull()
+})
+
+describe('dayLabel', () => {
+  it('says Yesterday for the previous day, across month and year ends', () => {
+    expect(dayLabel('2026-11-04', '2026-11-05')).toBe('Yesterday')
+    expect(dayLabel('2026-10-31', '2026-11-01')).toBe('Yesterday')
+    expect(dayLabel('2025-12-31', '2026-01-01')).toBe('Yesterday')
+  })
+
+  it('shows weekday and date, with the year only for another year', () => {
+    // Punctuation varies between ICU versions, so match the parts.
+    const same = dayLabel('2026-11-03', '2026-11-05', 'en-GB')
+    expect(same).toMatch(/^Tue,? 3 Nov$/)
+    const other = dayLabel('2025-11-03', '2026-11-05', 'en-GB')
+    expect(other).toMatch(/^Mon,? 3 Nov,? 2025$/)
+  })
+})
+
+describe('setsLabel', () => {
+  it('pluralises', () => {
+    expect(setsLabel(1)).toBe('1 set')
+    expect(setsLabel(0)).toBe('0 sets')
+    expect(setsLabel(12)).toBe('12 sets')
+  })
 })

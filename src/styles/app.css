@@ -64,9 +64,22 @@ input {
   color: inherit;
 }
 
+[hidden] {
+  display: none !important;
+}
+
+/* App shell: screens scroll above a fixed bottom navigation bar. */
+:root {
+  --nav-height: 80px;
+}
+
+.shell {
+  padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom, 0px));
+}
+
 .screen {
   max-width: 480px;
-  min-height: 100dvh;
+  min-height: calc(100dvh - var(--nav-height));
   margin: 0 auto;
   padding: 16px;
   display: flex;
@@ -399,4 +412,254 @@ input {
 :focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
+}
+
+/* Navigation bar (M3): icon in a pill indicator above its label. */
+.nav {
+  position: fixed;
+  inset: auto 0 0;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  height: calc(var(--nav-height) + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: var(--surface-container);
+}
+
+.nav__item {
+  flex: 1 1 0;
+  min-width: var(--tap);
+  max-width: 160px;
+  min-height: var(--tap);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--on-surface-variant);
+  cursor: pointer;
+}
+
+.nav__indicator {
+  position: relative;
+  width: 64px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  transition: background-color 150ms;
+}
+
+.nav__label {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.nav__item[aria-current='page'] {
+  color: var(--on-surface);
+}
+
+.nav__item[aria-current='page'] .nav__indicator {
+  background: var(--secondary-container);
+  color: var(--on-secondary-container);
+}
+
+.nav__item[aria-current='page'] .nav__label {
+  font-weight: 700;
+}
+
+/* Large badge on the Timer tab: live mm:ss, or Done. */
+.nav__badge {
+  position: absolute;
+  top: -6px;
+  left: 38px;
+  min-width: 16px;
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  background: var(--primary);
+  color: var(--on-primary);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 14px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.nav__badge--alarm {
+  background: var(--tertiary);
+  color: var(--on-tertiary-container);
+  animation: badge-pulse 1s steps(1, end) infinite;
+}
+
+@keyframes badge-pulse {
+  50% {
+    background: var(--tertiary-container);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav__badge--alarm {
+    animation: none;
+  }
+}
+
+/* List screens (Today, History) */
+.screen--list {
+  align-items: stretch;
+  gap: 16px;
+}
+
+.screen__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.screen__bar .screen__title {
+  margin: 0;
+}
+
+.btn--icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 40px;
+  padding: 0 16px 0 12px;
+  font-size: 14px;
+}
+
+/* 48px target around the 40px visual button. */
+.btn--icon {
+  position: relative;
+}
+
+.btn--icon::after {
+  content: '';
+  position: absolute;
+  inset: -4px 0;
+}
+
+.card {
+  border-radius: 12px;
+  background: var(--surface-container);
+}
+
+.empty {
+  margin: 32px 8px;
+  color: var(--on-surface-variant);
+  text-align: center;
+  line-height: 1.5;
+}
+
+.total {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 16px 20px;
+}
+
+.total__count {
+  font-size: 45px;
+  line-height: 52px;
+  font-variant-numeric: tabular-nums;
+}
+
+.total__label {
+  color: var(--on-surface-variant);
+  font-size: 16px;
+}
+
+.counts {
+  margin: 0;
+  padding: 4px 0;
+  list-style: none;
+}
+
+.counts__row {
+  min-height: var(--tap);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 20px;
+}
+
+.counts__row + .counts__row {
+  border-top: 1px solid var(--outline-variant);
+}
+
+.counts__name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.counts__count {
+  font-size: 20px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.days {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.day {
+  overflow: hidden;
+}
+
+.day__head {
+  width: 100%;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 12px 0 20px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.day__label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 16px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.day__total {
+  color: var(--on-surface-variant);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.day__chevron {
+  display: flex;
+  color: var(--on-surface-variant);
+  transition: transform 150ms;
+}
+
+.day__head[aria-expanded='true'] .day__chevron {
+  transform: rotate(180deg);
+}
+
+.day__body {
+  border-top: 1px solid var(--outline-variant);
 }
