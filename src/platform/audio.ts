@@ -34,8 +34,10 @@ export function createWebAudio(
   let ctx: AudioContext | null = null
   const playing = new Set<OscillatorNode>()
 
+  // 'suspended' after creation outside a gesture, 'interrupted' on iOS Safari
+  // after a call or another app took the audio session.
   const resume = (c: AudioContext) => {
-    if (c.state === 'suspended') c.resume().catch(() => {})
+    if (c.state !== 'running') c.resume().catch(() => {})
   }
 
   return {
@@ -49,6 +51,7 @@ export function createWebAudio(
           const src = ctx.createBufferSource()
           src.buffer = ctx.createBuffer(1, 1, ctx.sampleRate)
           src.connect(ctx.destination)
+          src.onended = () => src.disconnect()
           src.start(0)
         }
         resume(ctx)
@@ -74,7 +77,12 @@ export function createWebAudio(
           gain.gain.setValueAtTime(GAIN, start + BEEP_S - 0.01)
           gain.gain.linearRampToValueAtTime(0, start + BEEP_S)
           osc.connect(gain).connect(c.destination)
-          osc.onended = () => playing.delete(osc)
+          // Disconnect when finished so repeats do not accumulate nodes.
+          osc.onended = () => {
+            playing.delete(osc)
+            osc.disconnect()
+            gain.disconnect()
+          }
           playing.add(osc)
           osc.start(start)
           osc.stop(start + BEEP_S)

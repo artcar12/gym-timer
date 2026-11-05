@@ -230,10 +230,21 @@ export function useTimer(options: UseTimerOptions = {}): TimerView {
     [audio],
   )
 
+  // Like selectPreset, the next state is computed here rather than in a
+  // setState updater, so the transition to running is a plain value that
+  // side effects (recording a set) can act on outside any updater.
   const start = useCallback(() => {
     audio.unlock()
-    dispatch({ type: 'start', durationMs: selectedMs })
-  }, [audio, dispatch, selectedMs])
+    const prev = stateRef.current
+    const next = reduce(
+      prev,
+      { type: 'start', durationMs: selectedMs },
+      nowRef.current(),
+    )
+    if (next === prev) return
+    stateRef.current = next
+    setState(next)
+  }, [audio, selectedMs])
   const pause = useCallback(() => dispatch({ type: 'pause' }), [dispatch])
   const resume = useCallback(() => {
     audio.unlock()

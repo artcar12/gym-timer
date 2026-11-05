@@ -233,6 +233,21 @@ describe('audio unlock', () => {
   })
 })
 
+describe('start', () => {
+  it('computes the next state outside the updater, so the same tick sees running', () => {
+    const { result } = setup()
+    act(() => {
+      result.current.start()
+      // stateRef already holds running: this preset tap is ignored rather
+      // than starting a second timer from a stale idle state.
+      result.current.selectPreset(30_000)
+    })
+    expect(result.current.status).toBe('running')
+    expect(result.current.selectedMs).toBe(60_000)
+    expect(result.current.display).toBe('01:00')
+  })
+})
+
 describe('alarm', () => {
   function toDone() {
     const s = setup()

@@ -41,6 +41,24 @@ describe('createWakeLock', () => {
     expect(sentinels[1].release).toHaveBeenCalledTimes(1)
   })
 
+  it('forgets a sentinel on its release event, for browsers without `released`', async () => {
+    const listeners: (() => void)[] = []
+    const request = vi.fn(async () => ({
+      release: vi.fn(async () => {}),
+      addEventListener: (_: 'release', l: () => void) => listeners.push(l),
+    }))
+    const lock = createWakeLock({ wakeLock: { request } }, vi.fn())
+    lock.acquire()
+    await flush()
+    lock.acquire() // held
+    expect(request).toHaveBeenCalledTimes(1)
+
+    listeners[0]() // browser released it (page hidden)
+    lock.acquire()
+    await flush()
+    expect(request).toHaveBeenCalledTimes(2)
+  })
+
   it('releases a lock that resolves after release() was called', async () => {
     const s = fakeSentinel()
     const lock = createWakeLock(
@@ -104,16 +122,24 @@ describe('createWebAudio', () => {
   })
 
   it('creates the context once on unlock, resumes it, and beeps through it', () => {
-    const oscillators: {
-      start: ReturnType<typeof vi.fn>
+    type Node = {
+      connect: ReturnType<typeof vi.fn>
+      disconnect: ReturnType<typeof vi.fn>
+    }
+    const oscillators: (Node & {
       stop: ReturnType<typeof vi.fn>
-    }[] = []
+      onended: (() => void) | null
+    })[] = []
+    const gains: Node[] = []
     const param = () => ({
       value: 0,
       setValueAtTime: vi.fn(),
       linearRampToValueAtTime: vi.fn(),
     })
-    const node = () => ({ connect: vi.fn((n: unknown) => n) })
+    const node = () => ({
+      connect: vi.fn((n: unknown) => n),
+      disconnect: vi.fn(),
+    })
     const instances: FakeCtx[] = []
     class FakeCtx {
       state = 'suspended'
@@ -129,7 +155,11 @@ describe('createWebAudio', () => {
         buffer: null,
         start: vi.fn(),
       }))
-      createGain = vi.fn(() => ({ ...node(), gain: param() }))
+      createGain = vi.fn(() => {
+        const g = { ...node(), gain: param() }
+        gains.push(g)
+        return g
+      })
       createOscillator = vi.fn(() => {
         const o = {
           ...node(),
@@ -159,6 +189,19 @@ describe('createWebAudio', () => {
     expect(oscillators.length).toBeGreaterThan(0)
     audio.stop()
     for (const o of oscillators) expect(o.stop).toHaveBeenCalledTimes(2)
+
+    // Finished beeps release their nodes.
+    for (const o of oscillators) o.onended?.()
+    for (const n of [...oscillators, ...gains]) {
+      expect(n.disconnect).toHaveBeenCalledTimes(1)
+    }
+
+    // Any non-running state is resumed, e.g. iOS Safari's 'interrupted'.
+    instances[0].state = 'interrupted'
+    audio.beep()
+    expect(instances[0].resume).toHaveBeenCalledTimes(2)
+    audio.beep() // running again: no extra resume
+    expect(instances[0].resume).toHaveBeenCalledTimes(2)
   })
 
   it('never throws if the context constructor fails', () => {

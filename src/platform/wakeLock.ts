@@ -5,8 +5,10 @@ export interface WakeLock {
 }
 
 interface Sentinel {
-  readonly released: boolean
+  /** Missing before Chrome 87; the `release` event is the reliable signal. */
+  readonly released?: boolean
   release(): Promise<void>
+  addEventListener?(type: 'release', listener: () => void): void
 }
 
 interface WakeLockApi {
@@ -35,14 +37,20 @@ export function createWakeLock(
     log('Screen wake lock unavailable:', error)
   }
   const drop = (s: Sentinel) => {
-    if (!s.released) s.release().catch(() => {})
+    if (s.released !== true) s.release().catch(() => {})
+  }
+  const hold = (s: Sentinel) => {
+    sentinel = s
+    // The browser releases the lock itself when the page is hidden.
+    s.addEventListener?.('release', () => {
+      if (sentinel === s) sentinel = null
+    })
   }
 
   return {
     acquire() {
       wanted = true
-      // The browser releases the lock itself when the page is hidden.
-      if (pending || (sentinel && !sentinel.released)) return
+      if (pending || (sentinel && sentinel.released !== true)) return
       const api = nav?.wakeLock
       if (!api || typeof api.request !== 'function') {
         fail(new Error('Screen Wake Lock API not supported'))
@@ -60,7 +68,7 @@ export function createWakeLock(
       Promise.resolve(request).then(
         (s) => {
           pending = false
-          if (wanted) sentinel = s
+          if (wanted) hold(s)
           else drop(s)
         },
         (e) => {
