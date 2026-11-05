@@ -61,14 +61,33 @@ describe('useTimer', () => {
     expect(result.current.display).toBe('01:00')
   })
 
-  it('preset tap while running only selects, it does not restart', () => {
+  it('preset taps are ignored while running or paused', () => {
     const { result } = setup()
     act(() => result.current.selectPreset(60_000))
+    expect(result.current.canSelectPreset).toBe(false)
     advance(5_000)
     act(() => result.current.selectPreset(30_000))
     expect(result.current.status).toBe('running')
-    expect(result.current.selectedMs).toBe(30_000)
+    expect(result.current.selectedMs).toBe(60_000)
     expect(result.current.display).toBe('00:55')
+
+    act(() => result.current.pause())
+    act(() => result.current.selectPreset(30_000))
+    expect(result.current.status).toBe('paused')
+    expect(result.current.selectedMs).toBe(60_000)
+    expect(result.current.canSelectPreset).toBe(false)
+
+    act(() => result.current.reset())
+    expect(result.current.canSelectPreset).toBe(true)
+  })
+
+  it('a preset tap at zero before the next frame still restarts', () => {
+    const { result } = setup()
+    act(() => result.current.selectPreset(30_000))
+    vi.setSystemTime(Date.now() + 30_000) // expired, no frame has run yet
+    act(() => result.current.selectPreset(90_000))
+    expect(result.current.status).toBe('running')
+    expect(result.current.display).toBe('01:30')
   })
 
   it('pause freezes the display and resume continues from it', () => {
@@ -138,6 +157,7 @@ describe('useTimer', () => {
     act(() => result.current.selectPreset(30_000))
     advance(31_000)
     expect(result.current.status).toBe('done')
+    expect(result.current.canSelectPreset).toBe(true)
 
     act(() => result.current.selectPreset(90_000))
     expect(result.current.status).toBe('running')

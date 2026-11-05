@@ -116,6 +116,36 @@ input {
   color: var(--on-secondary-container);
 }
 
+.chip:disabled {
+  cursor: default;
+  opacity: 0.38;
+}
+
+/* Selected chip stays readable while disabled, so it still shows what is running. */
+.chip[aria-pressed='true']:disabled {
+  opacity: 0.7;
+}
+
+/* Custom value chip + edit button, joined like an M3 split button. */
+.chip-split {
+  display: inline-flex;
+}
+
+.chip--lead {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.chip--trail {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: -1px;
+  padding: 0;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
 .custom {
   display: flex;
   align-items: center;

@@ -19,12 +19,18 @@ export function parseCustom(text: string): number | null {
 export function PresetChips(props: {
   selectedMs: number
   onSelect: (ms: number) => void
+  /** False while running or paused: chips are shown but not tappable. */
+  enabled: boolean
 }) {
-  const { selectedMs, onSelect } = props
-  const [editing, setEditing] = useState(false)
-  const [text, setText] = useState('')
+  const { selectedMs, onSelect, enabled } = props
   const isPreset = (PRESETS_MS as readonly number[]).includes(selectedMs)
-  const customMs = isPreset ? null : selectedMs
+  // Remembered custom duration; survives picking a fixed preset in between.
+  const [customMs, setCustomMs] = useState<number | null>(
+    isPreset ? null : selectedMs,
+  )
+  const [editingState, setEditing] = useState(false)
+  const editing = editingState && enabled
+  const [text, setText] = useState('')
   const parsed = parseCustom(text)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -38,6 +44,7 @@ export function PresetChips(props: {
     if (parsed === null) return
     setEditing(false)
     setText('')
+    if (!(PRESETS_MS as readonly number[]).includes(parsed)) setCustomMs(parsed)
     onSelect(parsed)
   }
 
@@ -50,20 +57,55 @@ export function PresetChips(props: {
             type="button"
             class="chip"
             aria-pressed={selectedMs === ms}
+            disabled={!enabled}
             onClick={() => onSelect(ms)}
           >
             {presetLabel(ms)}
           </button>
         ))}
-        <button
-          type="button"
-          class="chip"
-          aria-pressed={customMs !== null}
-          aria-expanded={editing}
-          onClick={() => setEditing((v) => !v)}
-        >
-          {customMs !== null ? presetLabel(customMs) : 'Custom'}
-        </button>
+        {customMs !== null ? (
+          <span class="chip-split">
+            <button
+              type="button"
+              class="chip chip--lead"
+              aria-pressed={selectedMs === customMs}
+              disabled={!enabled}
+              onClick={() => onSelect(customMs)}
+            >
+              {presetLabel(customMs)}
+            </button>
+            <button
+              type="button"
+              class="chip chip--trail"
+              aria-label="Edit custom time"
+              aria-expanded={editing}
+              disabled={!enabled}
+              onClick={() => setEditing((v) => !v)}
+            >
+              <svg
+                viewBox="0 0 24 24"
+                width="18"
+                height="18"
+                aria-hidden="true"
+              >
+                <path
+                  fill="currentColor"
+                  d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm17.71-10.21a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
+                />
+              </svg>
+            </button>
+          </span>
+        ) : (
+          <button
+            type="button"
+            class="chip"
+            aria-expanded={editing}
+            disabled={!enabled}
+            onClick={() => setEditing((v) => !v)}
+          >
+            Custom
+          </button>
+        )}
       </div>
       {editing && (
         <form class="custom" onSubmit={submit}>

@@ -11,6 +11,7 @@ export function TimerScreen(props: UseTimerOptions) {
       <PresetChips
         selectedMs={timer.selectedMs}
         onSelect={timer.selectPreset}
+        enabled={timer.canSelectPreset}
       />
       <Dial
         display={timer.display}

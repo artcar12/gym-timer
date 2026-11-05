@@ -61,13 +61,59 @@ test('controls follow the timer state', () => {
   expect(button('Start')).toBeTruthy()
 })
 
-test('custom time selects and starts', () => {
+const chip = (label: string) => button(label) as HTMLButtonElement
+
+test('preset chips are disabled while running or paused', () => {
+  render(<App />)
+  fireEvent.click(button('90s'))
+  for (const label of ['30s', '60s', '90s', '2m', 'Custom']) {
+    expect(chip(label).disabled).toBe(true)
+  }
+  expect(chip('90s').getAttribute('aria-pressed')).toBe('true')
+
+  fireEvent.click(button('30s'))
+  expect(screen.getByRole('timer').textContent).toBe('01:30')
+  expect(chip('30s').getAttribute('aria-pressed')).toBe('false')
+
+  fireEvent.click(button('Pause'))
+  expect(chip('30s').disabled).toBe(true)
+
+  fireEvent.click(button('Reset'))
+  expect(chip('30s').disabled).toBe(false)
+})
+
+test('custom time starts, then its chip restarts it in one tap after done', () => {
   render(<App />)
   fireEvent.click(button('Custom'))
   const input = screen.getByLabelText('Time (m:ss)')
   fireEvent.input(input, { target: { value: '1:45' } })
   fireEvent.click(button('Set'))
   expect(screen.getByRole('timer').textContent).toBe('01:45')
-  expect(button('1:45').getAttribute('aria-pressed')).toBe('true')
+  expect(chip('1:45').getAttribute('aria-pressed')).toBe('true')
+  expect(chip('Edit custom time').disabled).toBe(true)
   expect(button('Pause')).toBeTruthy()
+
+  act(() => {
+    vi.advanceTimersByTime(106_000)
+  })
+  expect(screen.getByText('Done')).toBeTruthy()
+
+  fireEvent.click(button('1:45'))
+  expect(screen.getByRole('timer').textContent).toBe('01:45')
+  expect(button('Pause')).toBeTruthy()
+  expect(screen.queryByLabelText('Time (m:ss)')).toBeNull()
+
+  // Picking a fixed preset keeps the custom chip; the edit button reopens the input.
+  fireEvent.click(button('Reset'))
+  fireEvent.click(button('60s'))
+  fireEvent.click(button('Reset'))
+  expect(chip('1:45').getAttribute('aria-pressed')).toBe('false')
+  fireEvent.click(button('Edit custom time'))
+  fireEvent.input(screen.getByLabelText('Time (m:ss)'), {
+    target: { value: '0:40' },
+  })
+  fireEvent.click(button('Set'))
+  expect(screen.getByRole('timer').textContent).toBe('00:40')
+  expect(queryButton('1:45')).toBeNull()
+  expect(chip('40s').getAttribute('aria-pressed')).toBe('true')
 })

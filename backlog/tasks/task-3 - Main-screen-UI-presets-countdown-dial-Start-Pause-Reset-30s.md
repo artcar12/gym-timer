@@ -4,7 +4,7 @@ title: 'Main screen UI: presets, countdown dial, Start/Pause/Reset, +30s'
 status: In Progress
 assignee: []
 created_date: '2026-11-05 19:58'
-updated_date: '2026-11-05 20:03'
+updated_date: '2026-11-05 20:08'
 labels:
   - ui
 dependencies:
@@ -49,4 +49,6 @@ Node: the shell default is Node 18 ON PURPOSE. Never change the default. Prepend
 
 <!-- SECTION:NOTES:BEGIN -->
 useTimer (src/ui/useTimer.ts) wraps reduce/remainingMs with injectable now (default Date.now) and Scheduler (default rAF). Frame loop runs only while running; each frame dispatches tick and bumps a frame counter to force a render; remaining/display/progress are derived on every render from now(). visibilitychange dispatches tick + re-render. selectPreset settles with tick, resets if done, starts if idle; while running/paused it only selects. Idle shows the selected duration with a full ring. Custom: inline m:ss input (also accepts m.ss and plain seconds, since Android decimal keypads lack a colon). Components (Dial, PresetChips, Controls, TimerScreen) are thin. CSS in src/styles/app.css with M3-style tokens, dark default, light via prefers-color-scheme. No changes to src/timer/. Verified: npm test (57 pass, incl. hook tests with fake timers and App smoke tests), npm run build, npm run format:check on Node 24; browser check at 360x740: no horizontal scroll, no button/input under 48px, running, done (tertiary dial + DONE label) and light theme look right.
+
+Review follow-up: preset chips (incl. custom) are disabled and taps ignored while running/paused (useTimer.canSelectPreset; selectPreset is a no-op there), so the highlighted chip always matches the dial. A set custom value is now a split chip: tapping the value selects and starts like a fixed preset, a separate 48px pencil button edits it; the custom value is remembered across fixed-preset picks. 59 tests, build and format:check pass on Node 24; checked at 360px.
 <!-- SECTION:NOTES:END -->

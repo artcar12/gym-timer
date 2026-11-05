@@ -52,7 +52,12 @@ export interface TimerView {
   display: string
   /** 0..1 fraction of the ring to draw: remaining / totalMs. */
   progress: number
-  /** Select a duration; when idle or done, also start it (done is reset first). */
+  /** Preset taps are accepted only when idle or done. */
+  canSelectPreset: boolean
+  /**
+   * Idle or done: select `ms` and start it (done is reset first).
+   * Running or paused: ignored, so the highlighted chip keeps matching the dial.
+   */
   selectPreset(ms: number): void
   start(): void
   pause(): void
@@ -105,17 +110,22 @@ export function useTimer(options: UseTimerOptions = {}): TimerView {
     return () => document.removeEventListener('visibilitychange', recompute)
   }, [recompute])
 
+  const stateRef = useRef(state)
+  stateRef.current = state
+
   const selectPreset = useCallback((ms: number) => {
+    const t = nowRef.current()
+    // Settle an expired run first, so a tap at 00:00 before the next frame counts.
+    const settled = reduce(stateRef.current, TICK, t)
+    if (settled.status === 'running' || settled.status === 'paused') return
+    let next =
+      settled.status === 'done'
+        ? reduce(settled, { type: 'reset' }, t)
+        : settled
+    next = reduce(next, { type: 'start', durationMs: ms }, t)
+    stateRef.current = next
     setSelectedMs(ms)
-    setState((s) => {
-      const t = nowRef.current()
-      let next = reduce(s, TICK, t) // settle an expired run before deciding
-      if (next.status === 'done') next = reduce(next, { type: 'reset' }, t)
-      if (next.status === 'idle') {
-        next = reduce(next, { type: 'start', durationMs: ms }, t)
-      }
-      return next
-    })
+    setState(next)
   }, [])
 
   const start = useCallback(
@@ -145,6 +155,10 @@ export function useTimer(options: UseTimerOptions = {}): TimerView {
     remaining,
     display: formatMs(remaining),
     progress,
+    canSelectPreset:
+      state.status === 'idle' ||
+      state.status === 'done' ||
+      (state.status === 'running' && remaining === 0),
     selectPreset,
     start,
     pause,
