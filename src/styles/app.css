@@ -1,0 +1,264 @@
+/* Material 3 style tokens. Dark by default, light via prefers-color-scheme. */
+:root {
+  color-scheme: dark light;
+  --primary: #a8c7fa;
+  --on-primary: #062e6f;
+  --secondary-container: #3e4759;
+  --on-secondary-container: #d8e2f9;
+  --tertiary-container: #ffdcbe;
+  --on-tertiary-container: #2c1600;
+  --tertiary: #ffb870;
+  --surface: #111318;
+  --surface-container: #1e2025;
+  --surface-container-high: #282a2f;
+  --on-surface: #e2e2e9;
+  --on-surface-variant: #c4c6d0;
+  --outline: #8e9099;
+  --outline-variant: #44474e;
+  --radius-full: 999px;
+  --tap: 48px;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --primary: #415f91;
+    --on-primary: #ffffff;
+    --secondary-container: #dae2f9;
+    --on-secondary-container: #3e4759;
+    --tertiary-container: #ffdcbe;
+    --on-tertiary-container: #2c1600;
+    --tertiary: #8b5000;
+    --surface: #f9f9ff;
+    --surface-container: #ededf4;
+    --surface-container-high: #e7e8ee;
+    --on-surface: #191c20;
+    --on-surface-variant: #44474e;
+    --outline: #74777f;
+    --outline-variant: #c4c6d0;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--surface);
+  color: var(--on-surface);
+  font-family:
+    Roboto,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+.screen {
+  max-width: 480px;
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.screen__title {
+  align-self: flex-start;
+  margin: 8px 0 0;
+  font-size: 22px;
+  font-weight: 400;
+}
+
+/* Preset chips */
+.presets {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.chip {
+  min-width: var(--tap);
+  min-height: var(--tap);
+  padding: 0 12px;
+  border: 1px solid var(--outline-variant);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--on-surface-variant);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.chip[aria-pressed='true'] {
+  border-color: transparent;
+  background: var(--secondary-container);
+  color: var(--on-secondary-container);
+}
+
+.custom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.custom__label {
+  color: var(--on-surface-variant);
+  font-size: 14px;
+}
+
+.custom__input {
+  width: 7em;
+  min-height: var(--tap);
+  padding: 0 12px;
+  border: 1px solid var(--outline);
+  border-radius: 4px;
+  background: transparent;
+  font-size: 18px;
+  text-align: center;
+}
+
+.custom__input:focus {
+  outline: 2px solid var(--primary);
+  border-color: transparent;
+}
+
+/* Dial */
+.dial {
+  position: relative;
+  width: min(80vw, 320px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--surface-container);
+}
+
+.dial__ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.dial__track,
+.dial__progress {
+  fill: none;
+  stroke-width: 4;
+}
+
+.dial__track {
+  stroke: var(--surface-container-high);
+}
+
+.dial__progress {
+  stroke: var(--primary);
+  stroke-linecap: round;
+}
+
+.dial__center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.dial__time {
+  font-size: clamp(48px, 16vw, 72px);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -1px;
+}
+
+.dial__label {
+  color: var(--on-surface-variant);
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.dial--paused .dial__time {
+  color: var(--on-surface-variant);
+}
+
+/* Done: solid tertiary dial, clearly different from running/paused. */
+.dial--done {
+  background: var(--tertiary-container);
+}
+
+.dial--done .dial__track {
+  stroke: var(--tertiary);
+}
+
+.dial--done .dial__time,
+.dial--done .dial__label {
+  color: var(--on-tertiary-container);
+  font-weight: 500;
+}
+
+/* Controls */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+.btn {
+  min-width: 96px;
+  min-height: 56px;
+  padding: 0 24px;
+  border: none;
+  border-radius: var(--radius-full);
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn:disabled {
+  opacity: 0.38;
+  cursor: default;
+}
+
+.btn--filled {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+
+.btn--tonal {
+  background: var(--secondary-container);
+  color: var(--on-secondary-container);
+}
+
+.custom .btn {
+  min-height: var(--tap);
+  min-width: var(--tap);
+}
+
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
