@@ -320,3 +320,94 @@ describe('alarm', () => {
     expect(vi.getTimerCount()).toBe(0)
   })
 })
+
+describe('onStarted', () => {
+  function setupStarted() {
+    const f = fakes()
+    const onStarted = vi.fn()
+    const hook = renderHook(() =>
+      useTimer({
+        now: () => Date.now(),
+        scheduler: frozenFrames,
+        initialPresetMs: 60_000,
+        onStarted,
+        ...f,
+      }),
+    )
+    return { ...hook, ...f, onStarted }
+  }
+
+  it('fires once per Start, inside the handler, after the audio unlock', () => {
+    const { result, audio, onStarted } = setupStarted()
+    act(() => {
+      result.current.start()
+      // Still inside the tap's call stack: no render or effect has run.
+      expect(onStarted).toHaveBeenCalledTimes(1)
+      // Double tap in the same tick: stateRef is already running.
+      result.current.start()
+      expect(onStarted).toHaveBeenCalledTimes(1)
+    })
+    expect(onStarted).toHaveBeenCalledWith(60_000, 1_000_000)
+    expect(audio.unlock.mock.invocationCallOrder[0]).toBeLessThan(
+      onStarted.mock.invocationCallOrder[0],
+    )
+    expect(result.current.status).toBe('running')
+  })
+
+  it('fires once per preset tap from idle or done, with that duration', () => {
+    const { result, onStarted } = setupStarted()
+    act(() => {
+      result.current.selectPreset(30_000)
+      expect(onStarted).toHaveBeenCalledWith(30_000, 1_000_000)
+      // Ignored while running: no second set.
+      result.current.selectPreset(90_000)
+    })
+    expect(onStarted).toHaveBeenCalledTimes(1)
+
+    advance(30_000)
+    expect(result.current.status).toBe('done')
+    act(() => result.current.selectPreset(90_000))
+    expect(onStarted).toHaveBeenCalledTimes(2)
+    expect(onStarted).toHaveBeenLastCalledWith(90_000, 1_030_000)
+  })
+
+  it('pause, resume, +30s, reset and dismiss record nothing', () => {
+    const { result, onStarted } = setupStarted()
+    act(() => result.current.start())
+    act(() => result.current.pause())
+    act(() => result.current.resume())
+    act(() => result.current.add30s())
+    act(() => result.current.reset())
+    expect(onStarted).toHaveBeenCalledTimes(1)
+
+    // Start after a reset from done is a new set.
+    act(() => result.current.selectPreset(30_000))
+    advance(30_000)
+    act(() => result.current.dismiss())
+    act(() => result.current.reset())
+    expect(onStarted).toHaveBeenCalledTimes(2)
+    act(() => result.current.start())
+    expect(onStarted).toHaveBeenCalledTimes(3)
+    expect(onStarted).toHaveBeenLastCalledWith(30_000, 1_030_000)
+  })
+
+  it('uses the latest callback without needing a stable reference', () => {
+    const first = vi.fn()
+    const second = vi.fn()
+    let cb = first
+    const f = fakes()
+    const { result, rerender } = renderHook(() =>
+      useTimer({
+        now: () => Date.now(),
+        scheduler: frozenFrames,
+        onStarted: cb,
+        ...f,
+      }),
+    )
+    cb = second
+    rerender()
+    act(() => result.current.start())
+    expect(first).not.toHaveBeenCalled()
+    expect(second).toHaveBeenCalledTimes(1)
+  })
+})

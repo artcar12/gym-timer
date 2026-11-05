@@ -67,6 +67,13 @@ export interface UseTimerOptions {
   vibrator?: Vibrator
   /** Done detection and alarm repeat. Must be a stable reference. */
   timeouts?: Timeouts
+  /**
+   * Called once per transition to running from a Start or preset tap (never
+   * on resume or +30s), synchronously in the tap handler after the state is
+   * set, with the started duration and the clock value of the start. Not
+   * called from any state updater or effect. Need not be a stable reference.
+   */
+  onStarted?: (durationMs: number, nowMs: number) => void
 }
 
 export interface TimerView {
@@ -109,9 +116,12 @@ export function useTimer(options: UseTimerOptions = {}): TimerView {
     audio = defaultAudio,
     vibrator = defaultVibrator,
     timeouts = browserTimeouts,
+    onStarted,
   } = options
   const nowRef = useRef(now)
   nowRef.current = now
+  const onStartedRef = useRef(onStarted)
+  onStartedRef.current = onStarted
 
   const [state, setState] = useState<TimerState>(IDLE)
   const [selectedMs, setSelectedMs] = useState(initialPresetMs)
@@ -226,24 +236,23 @@ export function useTimer(options: UseTimerOptions = {}): TimerView {
       stateRef.current = next
       setSelectedMs(ms)
       setState(next)
+      onStartedRef.current?.(ms, t)
     },
     [audio],
   )
 
   // Like selectPreset, the next state is computed here rather than in a
   // setState updater, so the transition to running is a plain value that
-  // side effects (recording a set) can act on outside any updater.
+  // side effects (onStarted, which records a set) can act on outside any updater.
   const start = useCallback(() => {
     audio.unlock()
     const prev = stateRef.current
-    const next = reduce(
-      prev,
-      { type: 'start', durationMs: selectedMs },
-      nowRef.current(),
-    )
+    const t = nowRef.current()
+    const next = reduce(prev, { type: 'start', durationMs: selectedMs }, t)
     if (next === prev) return
     stateRef.current = next
     setState(next)
+    onStartedRef.current?.(selectedMs, t)
   }, [audio, selectedMs])
   const pause = useCallback(() => dispatch({ type: 'pause' }), [dispatch])
   const resume = useCallback(() => {
