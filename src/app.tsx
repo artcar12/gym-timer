@@ -1,3 +1,5 @@
+import { TimerScreen } from './ui/TimerScreen.tsx'
+
 export function App() {
-  return <h1>Gym Timer</h1>
+  return <TimerScreen />
 }
