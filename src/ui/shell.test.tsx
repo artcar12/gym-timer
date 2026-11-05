@@ -297,7 +297,9 @@ describe('History', () => {
       sets,
     })
     expect(revoke).not.toHaveBeenCalled()
-    advance(0)
+    advance(999)
+    expect(revoke).not.toHaveBeenCalled()
+    advance(1)
     expect(revoke).toHaveBeenCalledWith('blob:test/1')
   })
 

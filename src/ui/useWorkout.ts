@@ -78,6 +78,15 @@ const EMPTY: Data = { exercises: [], sets: [], selectedId: null, order: [] }
 const orderOf = (exercises: Exercise[]) =>
   recentExercises(exercises, exercises.length).map((e) => e.id)
 
+/**
+ * `order` with `id` moved to the front if it is not among the chips, so a
+ * selected exercise always has one; otherwise `order` itself.
+ */
+const withChip = (order: string[], id: string | null) =>
+  id === null || order.slice(0, RECENT_LIMIT).includes(id)
+    ? order
+    : [id, ...order.filter((o) => o !== id)]
+
 const sameName = (a: string, b: string) =>
   a.localeCompare(b, undefined, { sensitivity: 'accent' }) === 0
 
@@ -141,12 +150,13 @@ export function useWorkout(options: UseWorkoutOptions): WorkoutView {
     ])
       .then(([exercises, sets, stored]) => {
         if (!live) return
-        const order = orderOf(exercises)
+        const sorted = orderOf(exercises)
         const known = (id: string | null | undefined) =>
           id != null && exercises.some((e) => e.id === id)
         // An explicit null is kept; a stale id or nothing stored falls back.
         const selectedId =
-          stored === null ? null : known(stored) ? stored! : (order[0] ?? null)
+          stored === null ? null : known(stored) ? stored! : (sorted[0] ?? null)
+        const order = withChip(sorted, selectedId)
         commit({ exercises, sets, selectedId, order })
       })
       .catch((err) => live && onErrorRef.current(err))
@@ -197,19 +207,9 @@ export function useWorkout(options: UseWorkoutOptions): WorkoutView {
       const existing = d.exercises.find((e) => sameName(e.name, trimmed))
       if (existing) {
         const next = d.selectedId === existing.id ? d : pick(existing, d)
-        const visible = d.order.slice(0, RECENT_LIMIT).includes(existing.id)
-        if (next === d && visible) return
-        commit(
-          visible
-            ? next
-            : {
-                ...next,
-                order: [
-                  existing.id,
-                  ...d.order.filter((id) => id !== existing.id),
-                ],
-              },
-        )
+        const order = withChip(d.order, existing.id)
+        if (next === d && order === d.order) return
+        commit({ ...next, order })
         return
       }
       const ex: Exercise = { id: newId(), name: trimmed, lastUsed: now() }

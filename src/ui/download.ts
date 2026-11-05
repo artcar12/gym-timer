@@ -1,8 +1,10 @@
 /**
  * Save `text` as a file: a Blob URL on a temporary anchor with `download`,
- * clicked, then removed. The URL is revoked on the next task, after the
- * browser has started the download.
+ * clicked, then removed. The URL is revoked after {@link REVOKE_DELAY_MS}:
+ * some WebKit versions cancel a download whose URL is revoked at once.
  */
+export const REVOKE_DELAY_MS = 1_000
+
 export function downloadText(
   filename: string,
   text: string,
@@ -19,6 +21,6 @@ export function downloadText(
     a.click()
   } finally {
     a.remove()
-    setTimeout(() => URL.revokeObjectURL(url), 0)
+    setTimeout(() => URL.revokeObjectURL(url), REVOKE_DELAY_MS)
   }
 }

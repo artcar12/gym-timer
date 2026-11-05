@@ -4,7 +4,7 @@ title: 'Today and History screens, JSON export, bottom navigation'
 status: In Progress
 assignee: []
 created_date: '2026-11-05 23:35'
-updated_date: '2026-11-05 23:46'
+updated_date: '2026-11-05 23:52'
 labels:
   - ui
   - data
@@ -57,4 +57,6 @@ Data: derive.ts gains groupSetsByDay, exerciseCounts, daySummaries (+ UNKNOWN_EX
 useWorkout: exposes exercises, sets, today, refreshDay(); today is recomputed on load, visibilitychange (visible), tab switch, recordSet and removeLatestToday (so a set after midnight counts at once). create() with an existing name outside the first RECENT_LIMIT ids of order moves it to the front (also when it is already selected).
 Tests: src/ui/shell.test.tsx (tab switch keeps timer running to done with alarm, paused stays paused, Today/History/export, midnight via tab switch and visibilitychange), useWorkout.test.ts (rollover, hidden ignored, create fix), derive/export/format tests. 155 tests pass; build and format:check pass on Node 24. Checked at 360px in the browser: no horizontal scroll, no console errors.
 Not done: a stored selection outside the top 6 at load still has no chip (same class of bug as the create nit, left out of scope).
+
+Review nits: Blob URL revoked after 1000 ms (WebKit can cancel an immediately revoked download); a stored selection outside the first RECENT_LIMIT chips is moved to the front at load (shared withChip helper with create). 157 tests pass.
 <!-- SECTION:NOTES:END -->

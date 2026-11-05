@@ -133,3 +133,50 @@ it('create with the name of an exercise outside the chips moves it to the front'
   expect(names()[0]).toBe('Ex 2')
   expect(result.current.selected?.id).toBe('e2')
 })
+
+it('a stored selection outside the recent chips is moved to the front at load', async () => {
+  const exercises = Array.from({ length: 8 }, (_, i) => ({
+    id: `e${i}`,
+    name: `Ex ${i}`,
+    lastUsed: 100 + i,
+  }))
+  const { result } = renderHook(() =>
+    useWorkout({
+      repo: memoryRepository({ exercises, selectedExerciseId: 'e1' }),
+      now: () => 1_000,
+    }),
+  )
+  await flush()
+  expect(result.current.selected?.id).toBe('e1')
+  expect(result.current.recent.map((e) => e.id)).toEqual([
+    'e1',
+    'e7',
+    'e6',
+    'e5',
+    'e4',
+    'e3',
+  ])
+})
+
+it('a stored selection already among the chips keeps the lastUsed order', async () => {
+  const exercises = Array.from({ length: 8 }, (_, i) => ({
+    id: `e${i}`,
+    name: `Ex ${i}`,
+    lastUsed: 100 + i,
+  }))
+  const { result } = renderHook(() =>
+    useWorkout({
+      repo: memoryRepository({ exercises, selectedExerciseId: 'e4' }),
+      now: () => 1_000,
+    }),
+  )
+  await flush()
+  expect(result.current.recent.map((e) => e.id)).toEqual([
+    'e7',
+    'e6',
+    'e5',
+    'e4',
+    'e3',
+    'e2',
+  ])
+})
