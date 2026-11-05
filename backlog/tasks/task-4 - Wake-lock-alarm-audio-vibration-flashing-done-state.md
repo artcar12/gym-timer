@@ -1,10 +1,10 @@
 ---
 id: TASK-4
 title: 'Wake lock, alarm audio, vibration, flashing done state'
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-11-05 20:10'
-updated_date: '2026-11-05 20:17'
+updated_date: '2026-11-05 20:22'
 labels:
   - ui
 dependencies:
@@ -56,3 +56,9 @@ Audio unlock: audio.unlock() called synchronously at the top of start, resume an
 Alarm: alarming = done && dismissed !== state (identity of the done object), effect beeps + vibrates every 1s via timeouts and stops audio/vibration on cleanup. Dial gets dial--alarm (CSS flash, reduced-motion sets animation none, done colour kept), role=button 'Dismiss alarm' while alarming.
 Verified: npm test (85 tests), npm run build, npm run format:check on Node 24.15.0; src/timer untouched. Browser pane: done dial flashes (background alternates), dial tap stops flash and keeps done colour, reduced-motion rule present in CSSOM, wake lock denial in the pane logged once. NOT verified (needs a phone): audible beep after unlock on Android Chrome, vibration, wake lock actually keeping the screen on.
 <!-- SECTION:NOTES:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Wake lock, alarm audio, vibration, flashing done state merged to main (26a2b36 + review fixes 0b2606d). Reviewed clean, browser-checked at 360px. 87 tests, build and format clean. Sound, vibration and real wake lock still unverified on a phone.
+<!-- SECTION:FINAL_SUMMARY:END -->
