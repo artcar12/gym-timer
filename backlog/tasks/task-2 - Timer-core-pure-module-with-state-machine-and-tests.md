@@ -1,10 +1,10 @@
 ---
 id: TASK-2
 title: 'Timer core: pure module with state machine and tests'
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-11-05 19:41'
-updated_date: '2026-11-05 19:52'
+updated_date: '2026-11-05 19:56'
 labels:
   - timer
 dependencies:
@@ -50,3 +50,9 @@ Pure core in src/timer/timer.ts: immutable TimerState union (idle/running/paused
 Policy: disallowed transitions are no-ops returning the same object (=== detectable). Invalid arguments throw RangeError (start duration not finite > 0, non-finite now). Any action first settles an expired running timer to done, so pause/add30s after expiry give done. start is only valid from idle (UI resets from done first). add30s is a no-op in idle and done.
 Verification on Node 24: npm test (40 tests, incl. a purity test that scans the module sources for DOM/clock/timer globals), npm run build, npm run format:check all pass.
 <!-- SECTION:NOTES:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Pure timer core merged to main (3313ecb + nits 9a34d27). Reviewed clean. 42 tests, build and format clean.
+<!-- SECTION:FINAL_SUMMARY:END -->
