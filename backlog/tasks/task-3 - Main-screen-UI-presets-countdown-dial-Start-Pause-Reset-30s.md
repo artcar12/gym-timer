@@ -1,10 +1,10 @@
 ---
 id: TASK-3
 title: 'Main screen UI: presets, countdown dial, Start/Pause/Reset, +30s'
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-11-05 19:58'
-updated_date: '2026-11-05 20:08'
+updated_date: '2026-11-05 20:09'
 labels:
   - ui
 dependencies:
@@ -52,3 +52,9 @@ useTimer (src/ui/useTimer.ts) wraps reduce/remainingMs with injectable now (defa
 
 Review follow-up: preset chips (incl. custom) are disabled and taps ignored while running/paused (useTimer.canSelectPreset; selectPreset is a no-op there), so the highlighted chip always matches the dial. A set custom value is now a split chip: tapping the value selects and starts like a fixed preset, a separate 48px pencil button edits it; the custom value is remembered across fixed-preset picks. 59 tests, build and format:check pass on Node 24; checked at 360px.
 <!-- SECTION:NOTES:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Main screen UI merged to main (0ec8341 + review fixes 4fad43d). Reviewed clean, hand-tested at 360px. 59 tests, build and format clean.
+<!-- SECTION:FINAL_SUMMARY:END -->
