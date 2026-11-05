@@ -1,9 +1,10 @@
 ---
 id: TASK-2
 title: 'Timer core: pure module with state machine and tests'
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-11-05 19:41'
+updated_date: '2026-11-05 19:49'
 labels:
   - timer
 dependencies:
