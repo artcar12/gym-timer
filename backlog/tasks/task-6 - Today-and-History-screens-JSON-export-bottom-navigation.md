@@ -1,10 +1,10 @@
 ---
 id: TASK-6
 title: 'Today and History screens, JSON export, bottom navigation'
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-11-05 23:35'
-updated_date: '2026-11-05 23:52'
+updated_date: '2026-11-05 23:53'
 labels:
   - ui
   - data
@@ -60,3 +60,9 @@ Not done: a stored selection outside the top 6 at load still has no chip (same c
 
 Review nits: Blob URL revoked after 1000 ms (WebKit can cancel an immediately revoked download); a stored selection outside the first RECENT_LIMIT chips is moved to the front at load (shared withChip helper with create). 157 tests pass.
 <!-- SECTION:NOTES:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Today and History screens, JSON export, bottom tab bar with state lifted into AppShell merged to main (6d9682b + review fixes 4f0f548). Reviewed clean, hand-tested at 360px. 157 tests, build and format clean.
+<!-- SECTION:FINAL_SUMMARY:END -->
