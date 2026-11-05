@@ -1,9 +1,10 @@
 ---
 id: TASK-1
 title: 'Scaffold: Vite + Preact + TS, Vitest, Prettier, Node 24 engines'
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-11-05 19:41'
+updated_date: '2026-11-05 19:41'
 labels:
   - scaffold
 dependencies: []
