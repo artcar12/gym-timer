@@ -121,7 +121,7 @@ describe('useTimer', () => {
     expect(result.current.state).toMatchObject({ totalMs: 90_000 })
   })
 
-  it('reaches done at zero via the frame loop and stops scheduling', () => {
+  it('reaches done at zero and stops scheduling once dismissed', () => {
     const { result } = setup()
     act(() => result.current.selectPreset(30_000))
     advance(29_900)
@@ -132,6 +132,11 @@ describe('useTimer', () => {
     expect(result.current.status).toBe('done')
     expect(result.current.display).toBe('00:00')
     expect(result.current.progress).toBe(0)
+    // Only the alarm repeat is pending; frames and done detection stopped.
+    expect(result.current.alarming).toBe(true)
+    expect(vi.getTimerCount()).toBe(1)
+    act(() => result.current.dismiss())
+    expect(result.current.status).toBe('done')
     expect(vi.getTimerCount()).toBe(0)
   })
 

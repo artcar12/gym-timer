@@ -17,6 +17,8 @@ export function TimerScreen(props: UseTimerOptions) {
         display={timer.display}
         progress={timer.progress}
         status={timer.status}
+        alarming={timer.alarming}
+        onDismiss={timer.dismiss}
       />
       <Controls timer={timer} />
     </main>
