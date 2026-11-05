@@ -1,8 +1,9 @@
 /**
  * Pure timer core. No DOM, no globals, no clock reads: every function that
- * needs the current time takes it as a `nowMs` argument (milliseconds on any
- * monotonic-enough scale, e.g. `Date.now()` or `performance.now()` supplied by
- * the caller).
+ * needs the current time takes it as a `nowMs` argument (milliseconds,
+ * supplied by the caller). Use `Date.now()` whenever state will be saved and
+ * restored: `performance.now()` restarts on every page load, so a persisted
+ * `RunningState.startedAt` would be wrong after a reload.
  *
  * Remaining time is always derived from a stored start timestamp and the
  * duration left at that moment, never from counting ticks, so it stays correct
@@ -17,6 +18,8 @@
  * - Before any action is applied, a running timer whose remaining time has
  *   reached 0 is settled to `done`. So `pause` or `add30s` after expiry yield
  *   `done` (and then act on `done`, where they are no-ops).
+ * - `start` is only valid from idle, so after a finished timer the UI must
+ *   send `reset` and then `start` when a preset is tapped.
  */
 
 /** Milliseconds added by the `add30s` action. */
