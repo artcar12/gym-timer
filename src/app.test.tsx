@@ -117,3 +117,41 @@ test('custom time starts, then its chip restarts it in one tap after done', () =
   expect(queryButton('1:45')).toBeNull()
   expect(chip('40s').getAttribute('aria-pressed')).toBe('true')
 })
+
+test('done dial flashes until tapped, then keeps the done colour', () => {
+  render(<App />)
+  fireEvent.click(button('30s'))
+  const dial = () => document.querySelector('.dial')!
+  expect(dial().classList.contains('dial--alarm')).toBe(false)
+
+  act(() => {
+    vi.advanceTimersByTime(30_000)
+  })
+  expect(dial().classList.contains('dial--done')).toBe(true)
+  expect(dial().classList.contains('dial--alarm')).toBe(true)
+
+  fireEvent.click(button('Dismiss alarm'))
+  expect(dial().classList.contains('dial--alarm')).toBe(false)
+  expect(dial().classList.contains('dial--done')).toBe(true)
+  expect(queryButton('Dismiss alarm')).toBeNull()
+  expect(screen.getByText('Done')).toBeTruthy()
+})
+
+test('Reset and a preset tap also stop the flashing', () => {
+  render(<App />)
+  fireEvent.click(button('30s'))
+  act(() => {
+    vi.advanceTimersByTime(30_000)
+  })
+  fireEvent.click(button('Reset'))
+  expect(document.querySelector('.dial--alarm')).toBeNull()
+
+  fireEvent.click(button('30s'))
+  act(() => {
+    vi.advanceTimersByTime(30_000)
+  })
+  expect(document.querySelector('.dial--alarm')).not.toBeNull()
+  fireEvent.click(button('60s'))
+  expect(document.querySelector('.dial--alarm')).toBeNull()
+  expect(screen.getByRole('timer').textContent).toBe('01:00')
+})

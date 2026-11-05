@@ -4,7 +4,7 @@ title: 'Wake lock, alarm audio, vibration, flashing done state'
 status: In Progress
 assignee: []
 created_date: '2026-11-05 20:10'
-updated_date: '2026-11-05 20:10'
+updated_date: '2026-11-05 20:17'
 labels:
   - ui
 dependencies:
@@ -27,13 +27,32 @@ Node: the shell default is Node 18 ON PURPOSE. Never change the default. Prepend
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Wake lock requested when the timer enters running (start, resume, preset start) and released on pause, done, reset and unmount; re-requested on visibilitychange to visible while running; failures (unsupported, denied) are swallowed and logged at most once
-- [ ] #2 AudioContext is created/resumed synchronously inside the user's Start or preset click handler (not in an updater or effect), so the alarm plays on Android Chrome; a short Web Audio beep pattern plays at done and repeats (e.g. every 1 s) until dismissed
-- [ ] #3 navigator.vibrate is called with a pattern at done and repeated with the alarm; no-op where unsupported
-- [ ] #4 Done state flashes visibly (CSS animation on the dial/background) while the alarm is active and stops flashing when dismissed; prefers-reduced-motion disables the flash but keeps the done colour
-- [ ] #5 Dismiss: tapping the dial, Reset, or a preset tap stops audio, vibration and flashing; Reset returns to idle, a preset tap starts the new timer
-- [ ] #6 Done is detected by a setTimeout armed with the remaining ms on start, resume and +30s and cleared on pause/reset/done, plus a recompute on visibilitychange; a timer that expires while the tab is hidden shows done and alarms when the tab becomes visible (or earlier if the timeout fires)
-- [ ] #7 Browser APIs (wake lock, audio, vibrate, timeouts) are behind injectable adapters with safe no-op fallbacks; the hook/tests use fakes; nothing throws in jsdom or in a browser lacking these APIs
-- [ ] #8 Vitest tests cover: wake lock acquire/release per transition, alarm starts at done and repeats, alarm stops on each dismiss path, vibration called, timeout armed/cleared correctly including after +30s and pause/resume, hidden-tab expiry; component test shows the flashing done state
-- [ ] #9 npm test, npm run build and npm run format:check pass on Node 24; src/timer/ untouched
+- [x] #1 Wake lock requested when the timer enters running (start, resume, preset start) and released on pause, done, reset and unmount; re-requested on visibilitychange to visible while running; failures (unsupported, denied) are swallowed and logged at most once
+- [x] #2 AudioContext is created/resumed synchronously inside the user's Start or preset click handler (not in an updater or effect), so the alarm plays on Android Chrome; a short Web Audio beep pattern plays at done and repeats (e.g. every 1 s) until dismissed
+- [x] #3 navigator.vibrate is called with a pattern at done and repeated with the alarm; no-op where unsupported
+- [x] #4 Done state flashes visibly (CSS animation on the dial/background) while the alarm is active and stops flashing when dismissed; prefers-reduced-motion disables the flash but keeps the done colour
+- [x] #5 Dismiss: tapping the dial, Reset, or a preset tap stops audio, vibration and flashing; Reset returns to idle, a preset tap starts the new timer
+- [x] #6 Done is detected by a setTimeout armed with the remaining ms on start, resume and +30s and cleared on pause/reset/done, plus a recompute on visibilitychange; a timer that expires while the tab is hidden shows done and alarms when the tab becomes visible (or earlier if the timeout fires)
+- [x] #7 Browser APIs (wake lock, audio, vibrate, timeouts) are behind injectable adapters with safe no-op fallbacks; the hook/tests use fakes; nothing throws in jsdom or in a browser lacking these APIs
+- [x] #8 Vitest tests cover: wake lock acquire/release per transition, alarm starts at done and repeats, alarm stops on each dismiss path, vibration called, timeout armed/cleared correctly including after +30s and pause/resume, hidden-tab expiry; component test shows the flashing done state
+- [x] #9 npm test, npm run build and npm run format:check pass on Node 24; src/timer/ untouched
 <!-- AC:END -->
+
+## Implementation Plan
+
+<!-- SECTION:PLAN:BEGIN -->
+1. src/platform/: timeouts.ts, wakeLock.ts, audio.ts, vibrate.ts adapters with no-op fallbacks.
+2. useTimer: options for adapters; setTimeout(remaining) done detection keyed on running state object; wake lock effect on running + re-acquire on visible; audio.unlock() synchronously in start/resume/selectPreset handlers; alarming derived from done + dismissed state; repeating alarm effect.
+3. Dial: alarm flash class, tap to dismiss; CSS animation with reduced-motion fallback.
+4. Tests: adapters, hook wiring with fakes, component flash/dismiss.
+<!-- SECTION:PLAN:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+Adapters in src/platform/ (timeouts.ts, wakeLock.ts, audio.ts, vibrate.ts, index.ts), each a no-op when its API is missing; defaults are module-level singletons that touch no browser API until called. useTimer takes wakeLock/audio/vibrator/timeouts options (stable refs).
+Done detection: effect keyed on the running state object arms timeouts.set(remainingMs); new object on start/resume/+30s re-arms, leaving running clears; fires early -> re-arms for the rest. rAF loop is now display-only (setFrame, no tick). visibilitychange still recomputes and re-acquires the wake lock if still running.
+Audio unlock: audio.unlock() called synchronously at the top of start, resume and selectPreset (every tap, idempotent); no updater/effect involvement. Wake lock: effect on running boolean (acquire/release), so it follows the transition, never inside an updater; adapter is idempotent, releases a late-resolving request, logs once.
+Alarm: alarming = done && dismissed !== state (identity of the done object), effect beeps + vibrates every 1s via timeouts and stops audio/vibration on cleanup. Dial gets dial--alarm (CSS flash, reduced-motion sets animation none, done colour kept), role=button 'Dismiss alarm' while alarming.
+Verified: npm test (85 tests), npm run build, npm run format:check on Node 24.15.0; src/timer untouched. Browser pane: done dial flashes (background alternates), dial tap stops flash and keeps done colour, reduced-motion rule present in CSSOM, wake lock denial in the pane logged once. NOT verified (needs a phone): audible beep after unlock on Android Chrome, vibration, wake lock actually keeping the screen on.
+<!-- SECTION:NOTES:END -->

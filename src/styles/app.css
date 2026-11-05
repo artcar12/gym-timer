@@ -249,6 +249,42 @@ input {
   font-weight: 500;
 }
 
+/* Alarm: the done dial flashes until dismissed. */
+.dial--alarm {
+  cursor: pointer;
+  animation: dial-flash 1s steps(1, end) infinite;
+}
+
+@keyframes dial-flash {
+  0% {
+    background: var(--tertiary-container);
+  }
+  50% {
+    background: var(--tertiary);
+  }
+}
+
+.dial--alarm .dial__track {
+  animation: dial-flash-track 1s steps(1, end) infinite;
+}
+
+@keyframes dial-flash-track {
+  0% {
+    stroke: var(--tertiary);
+  }
+  50% {
+    stroke: var(--tertiary-container);
+  }
+}
+
+/* No flashing for reduced motion; the solid done colour stays. */
+@media (prefers-reduced-motion: reduce) {
+  .dial--alarm,
+  .dial--alarm .dial__track {
+    animation: none;
+  }
+}
+
 /* Controls */
 .controls {
   display: flex;
