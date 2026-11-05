@@ -7,6 +7,7 @@ import {
 } from '@testing-library/preact'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { App } from './app.tsx'
+import { memoryRepository } from './data/index.ts'
 
 beforeEach(() => {
   vi.useFakeTimers()
@@ -23,7 +24,7 @@ const queryButton = (name: string | RegExp) =>
   screen.queryByRole('button', { name })
 
 test('renders presets, dial and only the idle controls', () => {
-  render(<App />)
+  render(<App repo={memoryRepository()} />)
   for (const label of ['30s', '60s', '90s', '2m', 'Custom']) {
     expect(button(label)).toBeTruthy()
   }
@@ -35,7 +36,7 @@ test('renders presets, dial and only the idle controls', () => {
 })
 
 test('controls follow the timer state', () => {
-  render(<App />)
+  render(<App repo={memoryRepository()} />)
   fireEvent.click(button('90s'))
   expect(screen.getByRole('timer').textContent).toBe('01:30')
   expect(button('Pause')).toBeTruthy()
@@ -64,7 +65,7 @@ test('controls follow the timer state', () => {
 const chip = (label: string) => button(label) as HTMLButtonElement
 
 test('preset chips are disabled while running or paused', () => {
-  render(<App />)
+  render(<App repo={memoryRepository()} />)
   fireEvent.click(button('90s'))
   for (const label of ['30s', '60s', '90s', '2m', 'Custom']) {
     expect(chip(label).disabled).toBe(true)
@@ -83,7 +84,7 @@ test('preset chips are disabled while running or paused', () => {
 })
 
 test('custom time starts, then its chip restarts it in one tap after done', () => {
-  render(<App />)
+  render(<App repo={memoryRepository()} />)
   fireEvent.click(button('Custom'))
   const input = screen.getByLabelText('Time (m:ss)')
   fireEvent.input(input, { target: { value: '1:45' } })
@@ -119,7 +120,7 @@ test('custom time starts, then its chip restarts it in one tap after done', () =
 })
 
 test('done dial flashes until tapped, then keeps the done colour', () => {
-  render(<App />)
+  render(<App repo={memoryRepository()} />)
   fireEvent.click(button('30s'))
   const dial = () => document.querySelector('.dial')!
   expect(dial().classList.contains('dial--alarm')).toBe(false)
@@ -138,7 +139,7 @@ test('done dial flashes until tapped, then keeps the done colour', () => {
 })
 
 test('Reset and a preset tap also stop the flashing', () => {
-  render(<App />)
+  render(<App repo={memoryRepository()} />)
   fireEvent.click(button('30s'))
   act(() => {
     vi.advanceTimersByTime(30_000)

@@ -2,9 +2,10 @@
 id: TASK-5
 title: 'Exercises, set recording on Start, set counter, IndexedDB persistence'
 status: In Progress
-assignee: []
+assignee:
+  - '@claude'
 created_date: '2026-11-05 22:06'
-updated_date: '2026-11-05 22:06'
+updated_date: '2026-11-05 22:15'
 labels:
   - data
   - ui
@@ -26,13 +27,38 @@ Node: the shell default is Node 18 ON PURPOSE. Never change the default. Prepend
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 src/data/ defines Exercise {id, name, lastUsed} and SetRecord {id, exerciseId, startedAt, durationS} and a Repository interface; an in-memory implementation and an idb-keyval implementation both pass the same shared test suite
-- [ ] #2 Pure derivation functions: setsForDay(sets, dayKey), countsByExercise(sets), recentExercises(exercises, limit) with tests; a day key is the local calendar date (YYYY-MM-DD) of startedAt
-- [ ] #3 Every Start or preset tap that moves the timer from idle (or done, via reset) to running records exactly one set for the selected exercise with startedAt=now and durationS=started duration; resume, +30s, pause and reset record nothing; with no exercise selected nothing is recorded
-- [ ] #4 Set recording is a plain side effect invoked from the start/selectPreset handlers (an onStarted-style option on useTimer), not inside a setState updater or effect; tests prove one set per start and none on double-tap or resume
-- [ ] #5 Main screen shows recent-exercise chips (ordered by lastUsed desc, at most ~6, plus a '+ new' chip that prompts for a name and creates and selects it); tapping a chip selects it and updates its lastUsed; selection persists across reload (last-used stays selected)
-- [ ] #6 A set-count badge next to the dial shows today's count for the selected exercise, with +1 and -1 buttons (48px targets); +1 adds a set with the selected duration, -1 removes the most recent set for that exercise today and does nothing at 0; hidden when no exercise is selected
-- [ ] #7 Persistence via idb-keyval; the app loads existing data on startup before rendering counts (loading state is not a flash of 0 that then jumps); storage errors are caught and logged, never crash the timer
-- [ ] #8 Timer behaviour from steps 2-4 unchanged (all existing tests still pass); src/timer/ untouched; tap targets stay >= 48px and the layout still fits 360px wide without horizontal scroll
-- [ ] #9 npm test, npm run build and npm run format:check pass on Node 24
+- [x] #1 src/data/ defines Exercise {id, name, lastUsed} and SetRecord {id, exerciseId, startedAt, durationS} and a Repository interface; an in-memory implementation and an idb-keyval implementation both pass the same shared test suite
+- [x] #2 Pure derivation functions: setsForDay(sets, dayKey), countsByExercise(sets), recentExercises(exercises, limit) with tests; a day key is the local calendar date (YYYY-MM-DD) of startedAt
+- [x] #3 Every Start or preset tap that moves the timer from idle (or done, via reset) to running records exactly one set for the selected exercise with startedAt=now and durationS=started duration; resume, +30s, pause and reset record nothing; with no exercise selected nothing is recorded
+- [x] #4 Set recording is a plain side effect invoked from the start/selectPreset handlers (an onStarted-style option on useTimer), not inside a setState updater or effect; tests prove one set per start and none on double-tap or resume
+- [x] #5 Main screen shows recent-exercise chips (ordered by lastUsed desc, at most ~6, plus a '+ new' chip that prompts for a name and creates and selects it); tapping a chip selects it and updates its lastUsed; selection persists across reload (last-used stays selected)
+- [x] #6 A set-count badge next to the dial shows today's count for the selected exercise, with +1 and -1 buttons (48px targets); +1 adds a set with the selected duration, -1 removes the most recent set for that exercise today and does nothing at 0; hidden when no exercise is selected
+- [x] #7 Persistence via idb-keyval; the app loads existing data on startup before rendering counts (loading state is not a flash of 0 that then jumps); storage errors are caught and logged, never crash the timer
+- [x] #8 Timer behaviour from steps 2-4 unchanged (all existing tests still pass); src/timer/ untouched; tap targets stay >= 48px and the layout still fits 360px wide without horizontal scroll
+- [x] #9 npm test, npm run build and npm run format:check pass on Node 24
 <!-- AC:END -->
+
+## Implementation Plan
+
+<!-- SECTION:PLAN:BEGIN -->
+1. src/data: types, Repository interface, memoryRepository, idbRepository (one idb-keyval store per DB, created lazily), shared contract suite run against both (idb via fake-indexeddb in jsdom).
+2. src/data/derive.ts: dayKey, setsForDay, countsByExercise, recentExercises, latestSetForExercise, with tests.
+3. useTimer onStarted(durationMs, nowMs) option, called after setState in start/selectPreset via a ref.
+4. src/ui/useWorkout.ts: load once, optimistic updates via a ref + state, repo writes caught and logged.
+5. ExerciseChips (inline + New input) above presets; SetBadge under the dial with -1/+1.
+6. Tests, build, format, 360px check.
+<!-- SECTION:PLAN:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+src/data: types.ts, repository.ts (Repository: listExercises, putExercise, listSets, listSetsForDay, addSet, deleteSet), memoryRepository.ts, idbRepository.ts (idb-keyval, one store per database: <prefix>-exercises / <prefix>-sets, opened lazily so import never touches IndexedDB), derive.ts (dayKey, setsForDay, countsByExercise, recentExercises, latestSet). repository.test.ts runs one describe.each contract suite against both implementations; idb runs for real on fake-indexeddb (dev dependency) in jsdom, plus a reopen-same-database persistence test.
+
+Set recording: useTimer gained onStarted(durationMs, nowMs), held in a ref and called at the end of the start and selectPreset handlers right after setState(next), after audio.unlock; never from an updater or effect. TimerScreen passes useWorkout.recordSet. Tests in useTimer.effects.test.ts assert one call per start, inside the handler call stack, none on double tap, ignored preset while running, pause, resume, +30s, reset, dismiss.
+
+src/ui/useWorkout.ts: loads exercises + sets once, then optimistic in-memory updates (dataRef + state, so two taps in one tick see each other) with repository writes in the background; rejections and sync throws are caught and logged via console.error. Selection = exercise with the latest lastUsed, so it survives reload without extra storage; selecting a chip or creating bumps lastUsed. ExerciseChips (6 most recent + '+ New' inline name input) reserves its row with aria-busy until loaded; SetBadge (-1 / count / +1, 48px) only renders after load with an exercise selected; -1 disabled at 0 and removes the latest set of today only.
+
+App takes an optional repo prop (default idbRepository()); existing app.test.tsx now passes memoryRepository() (timer assertions unchanged). Component tests in src/ui/workout.test.tsx.
+
+Verified: npm test (117 tests), npm run build, npm run format:check on Node 24.15.0. Browser at 360x780: no horizontal scroll (scrollWidth 360) with 7 exercises incl. a long name, badge buttons 48x48, count and selection restored after a real reload from IndexedDB. With 3 rows of exercise chips the Start button sits just under the fold at 780px tall (vertical scroll only).
+<!-- SECTION:NOTES:END -->

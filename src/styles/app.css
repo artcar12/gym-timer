@@ -82,6 +82,29 @@ input {
   font-weight: 400;
 }
 
+/* Exercise chips */
+.exercises {
+  width: 100%;
+  min-height: var(--tap);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Long names are cut with an ellipsis; the full name is in the title. */
+.chip--exercise {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.custom__input--name {
+  width: 12em;
+  max-width: 100%;
+  text-align: left;
+}
+
 /* Preset chips */
 .presets {
   width: 100%;
@@ -283,6 +306,55 @@ input {
   .dial--alarm .dial__track {
     animation: none;
   }
+}
+
+/* Set-count badge */
+.badge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 100%;
+  padding: 4px;
+  border-radius: var(--radius-full);
+  background: var(--surface-container);
+}
+
+.badge__btn {
+  flex: none;
+  width: var(--tap);
+  height: var(--tap);
+  border: none;
+  border-radius: 50%;
+  background: var(--secondary-container);
+  color: var(--on-secondary-container);
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.badge__btn:disabled {
+  opacity: 0.38;
+  cursor: default;
+}
+
+.badge__body {
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.badge__count {
+  font-size: 28px;
+  font-variant-numeric: tabular-nums;
+}
+
+.badge__label {
+  overflow: hidden;
+  color: var(--on-surface-variant);
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Controls */
