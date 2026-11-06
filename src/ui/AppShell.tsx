@@ -1,5 +1,11 @@
 import { useState } from 'preact/hooks'
 import type { Repository } from '../data/index.ts'
+import {
+  useInstallPrompt,
+  useServiceWorkerUpdate,
+  type InstallEnv,
+  type RegisterSW,
+} from '../pwa/index.ts'
 import { HistoryScreen } from './HistoryScreen.tsx'
 import { TabBar, type Tab, type TimerBadge } from './TabBar.tsx'
 import { TimerScreen } from './TimerScreen.tsx'
@@ -11,6 +17,12 @@ export interface AppShellProps extends Omit<UseTimerOptions, 'onStarted'> {
   /** Exercise and set storage. Must be a stable reference. */
   repo: Repository
   initialTab?: Tab
+  /** Registers the service worker. Omitted in tests and dev: no registration. */
+  registerSW?: RegisterSW
+  /** Window stand-in for the install prompt. Must be a stable reference. */
+  installEnv?: InstallEnv
+  /** Page reload used to apply an update. */
+  reload?: () => void
 }
 
 function timerBadge(timer: TimerView): TimerBadge | null {
@@ -27,12 +39,26 @@ function timerBadge(timer: TimerView): TimerBadge | null {
  * remembered custom time, also survives; Today and History mount on demand.
  */
 export function AppShell(props: AppShellProps) {
-  const { repo, initialTab = 'timer', ...timerOptions } = props
+  const {
+    repo,
+    initialTab = 'timer',
+    registerSW,
+    installEnv,
+    reload,
+    ...timerOptions
+  } = props
   const now = timerOptions.now ?? Date.now
   const workout = useWorkout({ repo, now })
   // A start = a set: recorded from the Start / preset tap handler itself.
   const timer = useTimer({ ...timerOptions, onStarted: workout.recordSet })
   const [tab, setTab] = useState<Tab>(initialTab)
+  const install = useInstallPrompt(installEnv)
+  // A new version never reloads the page while the timer is running or paused.
+  const update = useServiceWorkerUpdate({
+    register: registerSW,
+    status: timer.status,
+    reload,
+  })
 
   const select = (next: Tab) => {
     workout.refreshDay()
@@ -42,7 +68,12 @@ export function AppShell(props: AppShellProps) {
   return (
     <div class="shell">
       <div hidden={tab !== 'timer'}>
-        <TimerScreen timer={timer} workout={workout} />
+        <TimerScreen
+          timer={timer}
+          workout={workout}
+          install={install}
+          update={update}
+        />
       </div>
       {tab === 'today' && <TodayScreen workout={workout} />}
       {tab === 'history' && <HistoryScreen workout={workout} now={now} />}

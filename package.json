@@ -13,7 +13,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "icons": "node scripts/icons.mjs"
   },
   "dependencies": {
     "idb-keyval": "^6.3.0",
@@ -26,8 +27,10 @@
     "fake-indexeddb": "^6.2.7",
     "jsdom": "^31.0.0",
     "prettier": "^3.9.10",
+    "sharp": "^0.35.5",
     "typescript": "~7.0.2",
     "vite": "^8.3.6",
+    "vite-plugin-pwa": "^2.0.0",
     "vitest": "^5.1.0"
   }
 }

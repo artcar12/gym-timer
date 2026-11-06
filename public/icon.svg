@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Full-bleed square so the same art works as a maskable icon: everything
+       that matters sits inside the central 80% safe zone (radius 205). -->
+  <rect width="512" height="512" fill="#111318"/>
+  <circle cx="256" cy="256" r="150" fill="none" stroke="#3e4759" stroke-width="32"/>
+  <!-- Countdown arc, three quarters, starting at 12 o'clock. -->
+  <path d="M256 106 A150 150 0 1 1 106 256" fill="none" stroke="#a8c7fa"
+        stroke-width="32" stroke-linecap="round"/>
+  <!-- Dumbbell in the middle of the dial. -->
+  <g fill="#a8c7fa">
+    <rect x="186" y="244" width="140" height="24" rx="6"/>
+    <rect x="176" y="206" width="28" height="100" rx="10"/>
+    <rect x="308" y="206" width="28" height="100" rx="10"/>
+    <rect x="156" y="226" width="20" height="60" rx="8"/>
+    <rect x="336" y="226" width="20" height="60" rx="8"/>
+  </g>
+</svg>
