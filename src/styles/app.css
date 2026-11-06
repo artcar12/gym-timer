@@ -74,6 +74,7 @@ input {
 }
 
 .shell {
+  padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom, 0px));
 }
 
@@ -662,4 +663,41 @@ input {
 
 .day__body {
   border-top: 1px solid var(--outline-variant);
+}
+
+/* Install and update offers: a compact card above the timer, never a modal. */
+.banner {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 8px 8px 16px;
+  border-radius: 16px;
+  background: var(--surface-container-high);
+  color: var(--on-surface);
+}
+
+.banner__text {
+  flex: 1 1 160px;
+  font-size: 14px;
+  color: var(--on-surface-variant);
+}
+
+.banner__actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.banner .btn {
+  min-width: var(--tap);
+  min-height: var(--tap);
+  padding: 0 16px;
+  font-size: 14px;
+}
+
+.btn--text {
+  background: transparent;
+  color: var(--primary);
 }
