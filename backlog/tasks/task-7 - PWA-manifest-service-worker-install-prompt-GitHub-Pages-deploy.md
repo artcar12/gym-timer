@@ -1,10 +1,10 @@
 ---
 id: TASK-7
 title: 'PWA: manifest, service worker, install prompt, GitHub Pages deploy'
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-11-06 00:03'
-updated_date: '2026-11-06 00:24'
+updated_date: '2026-11-06 00:38'
 labels:
   - pwa
   - deploy
@@ -61,3 +61,9 @@ Branch claude/task-7-pwa-9f6fb7.
 - Verified: npm test 175 passed (18 new), npm run build, npm run format:check on Node 24.15.0; npm run preview serves http://localhost:4173/gym-timer/. Offline: the Claude built-in browser pane cannot register service workers (register() fails while fetch('sw.js') is 200), so checked with headless Chrome over CDP: first visit -> SW activated, scope /gym-timer/, precache has index.html, JS, CSS, manifest and all icons; offline reload renders Timer screen with Start, controlled by SW; offline /gym-timer/anything also renders. SW has no runtime caching and does not touch IndexedDB.
 - Not done: remote and Pages enablement (coordinator); the workflow has not run on GitHub yet.
 <!-- SECTION:NOTES:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Installable PWA via vite-plugin-pwa (autoUpdate, SW update gated while timer running/paused), install prompt hook with persisted dismissal, icons generated from public/icon.svg, base /gym-timer/ in production and / in dev/test, GitHub Actions Pages deploy workflow on Node 24 runtime actions. Reviewed clean; merged to main; 175 tests, build and format check pass on Node 24. Remote repo and Pages not yet created.
+<!-- SECTION:FINAL_SUMMARY:END -->
