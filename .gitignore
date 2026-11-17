@@ -7,3 +7,8 @@ dist
 !.vscode/extensions.json
 .idea
 .claude
+
+# Delegate output (agy, opencode, Codex)
+.agent-runs/
+# Desktop session worktrees
+.claude/worktrees/
