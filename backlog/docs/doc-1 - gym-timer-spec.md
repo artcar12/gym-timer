@@ -3,7 +3,7 @@ id: doc-1
 title: gym-timer spec
 type: specification
 created_date: '2026-11-17 00:27'
-updated_date: '2026-11-17 00:27'
+updated_date: '2026-11-17 00:32'
 ---
 Personal project. A rest timer for gym workouts, modelled on the Android Clock app's Timer tab,
 that also counts how many times the timer was started per exercise per workout.
@@ -19,10 +19,9 @@ that also counts how many times the timer was started per exercise per workout.
 ## Stack
 
 - Vite + Preact + TypeScript. Vitest for unit tests. Prettier.
-- Vite 8 requires Node 24. The shell default is Node 18 on purpose; prepend
-  `$HOME/.nvm/versions/node/<v24.x>/bin` to PATH per command, never change the default.
+- Node 24 (Vite 8 needs it; pinned in `.nvmrc` and `engines`).
 - Storage: IndexedDB via `idb-keyval`.
-- Deploy target: GitHub Pages (personal repo, Claude attribution lines in commits are fine).
+- Deploy target: GitHub Pages.
 
 ## Timer behaviour
 
