@@ -22,3 +22,25 @@ Do not edit Backlog task, draft, document, decision, or milestone markdown files
 
 </CRITICAL_INSTRUCTION>
 <!-- BACKLOG.MD GUIDELINES END -->
+
+<!-- working-standard START -->
+## Working method
+
+Arthur's `working-standard` skill applies to every session in this project. It's manual-only, so read `~/.claude/skills/working-standard/SKILL.md` at session start (and `references/lifecycle.md` for phase work) unless he has run `/working-standard`.
+<!-- working-standard END -->
+
+## Project rules
+
+Mobile-first rest timer PWA (Vite + Preact + TypeScript) that counts sets per exercise per day. Backlog doc-1 is the spec.
+
+Gate (all must pass before a merge; Node 24 per `.nvmrc`):
+
+```bash
+npm run format:check
+npm test
+npm run build
+```
+
+- Deploy: every push to `main` runs `.github/workflows/deploy.yml` (test, build, publish `dist/` to GitHub Pages at https://artcar12.github.io/gym-timer/). A push to `main` is not done until that run is green. Production base path is `/gym-timer/` (`PRODUCTION_BASE` in `vite.config.ts`).
+- No backend: all data stays in IndexedDB on the device; the service worker never touches it.
+- Icons: `public/icon.svg` is the source; after editing it run `npm run icons` and commit the regenerated PNGs.

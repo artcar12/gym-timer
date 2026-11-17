@@ -1,7 +1,7 @@
 # gym-timer
 
 Mobile-first rest timer for gym workouts that also counts sets per exercise per day. No backend;
-all data stays on the device. See `PLAN.md` for decisions and build order.
+all data stays on the device. The spec (decisions, behaviour, build order) is Backlog doc-1: `backlog doc view doc-1`.
 
 ## Node 24
 

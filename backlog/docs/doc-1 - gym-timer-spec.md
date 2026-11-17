@@ -1,5 +1,10 @@
-# gym-timer plan
-
+---
+id: doc-1
+title: gym-timer spec
+type: specification
+created_date: '2026-11-17 00:27'
+updated_date: '2026-11-17 00:32'
+---
 Personal project. A rest timer for gym workouts, modelled on the Android Clock app's Timer tab,
 that also counts how many times the timer was started per exercise per workout.
 
@@ -14,10 +19,9 @@ that also counts how many times the timer was started per exercise per workout.
 ## Stack
 
 - Vite + Preact + TypeScript. Vitest for unit tests. Prettier.
-- Vite 8 requires Node 24. The shell default is Node 18 on purpose; prepend
-  `$HOME/.nvm/versions/node/<v24.x>/bin` to PATH per command, never change the default.
+- Node 24 (Vite 8 needs it; pinned in `.nvmrc` and `engines`).
 - Storage: IndexedDB via `idb-keyval`.
-- Deploy target: GitHub Pages (personal repo, Claude attribution lines in commits are fine).
+- Deploy target: GitHub Pages.
 
 ## Timer behaviour
 
@@ -44,23 +48,7 @@ that also counts how many times the timer was started per exercise per workout.
 
 ## Workflow
 
-- Task tracking lives in this repo with Backlog.md (`backlog init` here, then `backlog task ...`).
-  Every build-order step below becomes one or more Backlog tasks with acceptance criteria. Task
-  state is the source of truth for what is done; no separate TODO files.
-- Session roles:
-  - Coordinator: one Claude Fable 5.1 session at high effort, opened in this folder. It owns the
-    Backlog board, breaks steps into tasks, starts child sessions, checks their results against
-    the acceptance criteria, and merges. It does not write feature code itself.
-  - Work sessions: Claude Opus 5.5 at medium effort, one per task, started by the coordinator with
-    a brief that names the task id, the files, and what done looks like. Each works on its own
-    branch/worktree and commits there.
-  - Review sessions: Claude Opus 5.5, started by the coordinator after a work session reports
-    done, reviewing that branch's diff for correctness against the task's acceptance criteria.
-    Findings go back to the work session (or a new one) before merge.
-- Flow per task: coordinator sets task to In Progress, starts work session, work session commits
-  and reports, coordinator starts review session, fixes loop until clean, coordinator merges to
-  main and marks the task Done.
-- Personal repo: Claude attribution lines in commits are fine.
+Per Arthur's working-standard skill (adopted in TASK-8, 2026-11-16). The original coordinator / work-session / review-session process in PLAN.md is superseded by it.
 
 ## Build order
 
@@ -71,3 +59,7 @@ that also counts how many times the timer was started per exercise per workout.
 5. Exercises, set recording, counter, persistence.
 6. Today and History screens, export.
 7. PWA: manifest, service worker via `vite-plugin-pwa`, install prompt, GitHub Pages deploy.
+
+All seven steps are done (TASK-1 to TASK-7). Live at https://artcar12.github.io/gym-timer/.
+
+Imported from PLAN.md in TASK-8 (2026-11-16).
